@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GotaSequenceLib.Playback {
-
+namespace GotaSequenceLib.Playback
+{
     /// <summary>
     /// A track.
     /// </summary>
-    public class Track {
-
+    public class Track
+    {
         /// <summary>
         /// Track index.
         /// </summary>
@@ -71,7 +68,8 @@ namespace GotaSequenceLib.Playback {
         /// Get the true pitch.
         /// </summary>
         /// <returns>The true pitch.</returns>
-        public int GetPitch() {
+        public int GetPitch()
+        {
             int lfo = LFOType == LFOType.Pitch ? (LFORange * Utils.Sin(LFOPhase >> 8) * LFODepth) : 0;
             lfo = (int)(((long)lfo * 60) >> 14);
             return (PitchBend * PitchBendRange / 2) + lfo;
@@ -81,7 +79,8 @@ namespace GotaSequenceLib.Playback {
         /// Get the true volume.
         /// </summary>
         /// <returns>The true volume.</returns>
-        public int GetVolume() {
+        public int GetVolume()
+        {
             int lfo = LFOType == LFOType.Volume ? (LFORange * Utils.Sin(LFOPhase >> 8) * LFODepth) : 0;
             lfo = (int)(((lfo & ~0xFC000000) >> 8) | ((lfo < 0 ? -1 : 0) << 6) | (((uint)lfo >> 26) << 18));
             return Utils.SustainTable[Math.Min((byte)127, _player.Volume)] + Utils.SustainTable[Math.Min((byte)127, Volume)] + Utils.SustainTable[Expression] + lfo;
@@ -91,13 +90,17 @@ namespace GotaSequenceLib.Playback {
         /// Get the true pan.
         /// </summary>
         /// <returns>The true pan.</returns>
-        public sbyte GetPan() {
+        public sbyte GetPan()
+        {
             int lfo = LFOType == LFOType.Panpot ? (LFORange * Utils.Sin(LFOPhase >> 8) * LFODepth) : 0;
             lfo = (int)(((lfo & ~0xFC000000) >> 8) | ((lfo < 0 ? -1 : 0) << 6) | (((uint)lfo >> 26) << 18));
             int p = Panpot + lfo;
-            if (p < -0x40) {
+            if (p < -0x40)
+            {
                 p = -0x40;
-            } else if (p > 0x3F) {
+            }
+            else if (p > 0x3F)
+            {
                 p = 0x3F;
             }
             return (sbyte)p;
@@ -108,7 +111,8 @@ namespace GotaSequenceLib.Playback {
         /// </summary>
         /// <param name="i">The track index.</param>
         /// <param name="player">The player.</param>
-        public Track(byte i, Player player) {
+        public Track(byte i, Player player)
+        {
             Index = i;
             _player = player;
         }
@@ -116,7 +120,8 @@ namespace GotaSequenceLib.Playback {
         /// <summary>
         /// Set default values.
         /// </summary>
-        public void Init() {
+        public void Init()
+        {
             Stopped = Tie = WaitingForNoteToFinishBeforeContinuingXD = Portamento = false;
             Allocated = Enabled = Index == 0;
             CurEvent = 0;
@@ -143,36 +148,48 @@ namespace GotaSequenceLib.Playback {
         /// <summary>
         /// Tick track.
         /// </summary>
-        public void Tick() {
-            if (Rest > 0) {
+        public void Tick()
+        {
+            if (Rest > 0)
+            {
                 Rest--;
             }
-            if (Channels.Count != 0) {
+            if (Channels.Count != 0)
+            {
                 // TickNotes:
-                for (int i = 0; i < Channels.Count; i++) {
+                for (int i = 0; i < Channels.Count; i++)
+                {
                     Channel c = Channels[i];
-                    if (c.NoteDuration > 0) {
+                    if (c.NoteDuration > 0)
+                    {
                         c.NoteDuration--;
                     }
-                    if (!c.AutoSweep && c.SweepCounter < c.SweepLength) {
+                    if (!c.AutoSweep && c.SweepCounter < c.SweepLength)
+                    {
                         c.SweepCounter++;
                     }
                 }
                 // LFO:
-                if (LFODelayCount > LFODelay) {
+                if (LFODelayCount > LFODelay)
+                {
                     int speed = LFOSpeed << 6; // "<< 6" is "* 0x40"
                     int counter = (LFOPhase + speed) >> 8; // ">> 8" is "/ 0x100"
-                    while (counter >= 0x80) {
+                    while (counter >= 0x80)
+                    {
                         counter -= 0x80;
                     }
                     LFOPhase += (ushort)speed;
                     LFOPhase &= 0xFF;
                     LFOPhase |= (ushort)(counter << 8); // "<< 8" is "* 0x100"
-                    
-                } else {
+
+                }
+                else
+                {
                     LFODelayCount++;
                 }
-            } else {
+            }
+            else
+            {
                 WaitingForNoteToFinishBeforeContinuingXD = false;
                 LFOPhase = 0;
                 LFODelayCount = LFODelay;
@@ -182,22 +199,23 @@ namespace GotaSequenceLib.Playback {
         /// <summary>
         /// Stop all channels.
         /// </summary>
-        public void StopAllChannels() {
+        public void StopAllChannels()
+        {
             Channel[] chans = Channels.ToArray();
-            for (int i = 0; i < chans.Length; i++) {
+            for (int i = 0; i < chans.Length; i++)
+            {
                 chans[i].Stop();
             }
         }
-
     }
 
     /// <summary>
     /// LFO type.
     /// </summary>
-    public enum LFOType {
+    public enum LFOType
+    {
         Pitch,
         Volume,
         Panpot
     }
-
 }

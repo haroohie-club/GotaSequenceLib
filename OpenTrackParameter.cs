@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace GotaSequenceLib {
-
+namespace GotaSequenceLib
+{
     /// <summary>
     /// Open track parameter.
     /// </summary>
-    public class OpenTrackParameter {
-
+    public class OpenTrackParameter
+    {
         /// <summary>
         /// Track number.
         /// </summary>
@@ -30,10 +26,13 @@ namespace GotaSequenceLib {
         /// Command index used when reading and writing.
         /// </summary>
         /// <param name="commands">The commands.</param>
-        public int Index(List<SequenceCommand> commands) {
+        public int Index(List<SequenceCommand> commands)
+        {
             int ind = m_Index;
-            if (ReferenceCommand != null) {
-                if (ReferenceCommand.Index(commands) != -1) {
+            if (ReferenceCommand != null)
+            {
+                if (ReferenceCommand.Index(commands) != -1)
+                {
                     ind = ReferenceCommand.Index(commands);
                 }
             }
@@ -45,7 +44,5 @@ namespace GotaSequenceLib {
         /// Label text.
         /// </summary>
         public string Label;
-
     }
-
 }

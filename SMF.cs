@@ -4,16 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Track = Sanford.Multimedia.Midi.Track;
 
-namespace GotaSequenceLib {
-
+namespace GotaSequenceLib
+{
     /// <summary>
     /// MIDI file.
     /// </summary>
-    public static class SMF {
-
+    public static class SMF
+    {
         /// <summary>
         /// Random.
         /// </summary>
@@ -26,14 +24,14 @@ namespace GotaSequenceLib {
         /// <param name="startIndex">The start index.</param>
         /// <param name="trackMask">Allowed tracks.</param>
         /// <returns>The sequence.</returns>
-        public static Sequence FromSequenceCommands(List<SequenceCommand> commands, int startIndex, ushort trackMask = 0xFFFF) {
-
+        public static Sequence FromSequenceCommands(List<SequenceCommand> commands, int startIndex, ushort trackMask = 0xFFFF)
+        {
             //New sequence with default 960 ticks per quarter note.
             var m = new Sequence(960) { Format = 1 };
 
             //Add and read initial track.
-            m.Add(new Track());
-            Dictionary<int, int> tickMap = new Dictionary<int, int>();
+            m.Add(new Sanford.Multimedia.Midi.Track());
+            Dictionary<int, int> tickMap = new();
             short[] vars = new short[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
             WriteTrack(m, tickMap, commands, 0, m[0], m[0], startIndex, ref vars, 0, trackMask);
 
@@ -43,20 +41,23 @@ namespace GotaSequenceLib {
             List<Tuple<int, int>> jumpsToAdd = new List<Tuple<int, int>>();
 
             //We aren't guaranteed to hit every instruction in the file, so we loop through tickMap, which contains the instructions that we did hit.
-            foreach (var cmdTicks in tickMap.Where(x => Player.GetTrueCommandType(commands[x.Key]) == SequenceCommands.Jump)) {
+            foreach (var cmdTicks in tickMap.Where(x => Player.GetTrueCommandType(commands[x.Key]) == SequenceCommands.Jump))
+            {
                 int ticksJump = cmdTicks.Value;
                 var cmd = commands[cmdTicks.Key];
                 int arg = Player.GetCommandParameter(cmd, 0, _rand, commands);
                 int ticks = tickMap[arg];
                 long tickHash = (ticks << 32) | ticksJump;
-                if (!jumpsAdded.Contains(tickHash)) {
+                if (!jumpsAdded.Contains(tickHash))
+                {
                     jumpsAdded.Add(tickHash);
                     jumpsToAdd.Add(new Tuple<int, int>(ticks, ticksJump));
                 }
             }
 
             //Add jumps.
-            foreach (var j in jumpsToAdd) {
+            foreach (var j in jumpsToAdd)
+            {
                 m[0].Insert(j.Item1, new MetaMessage(MetaType.Marker, Encoding.UTF8.GetBytes(jumpsToAdd.Count == 1 ? "[" : ("Label_" + labelNum))));
                 m[0].Insert(j.Item2, new MetaMessage(MetaType.Marker, Encoding.UTF8.GetBytes(jumpsToAdd.Count == 1 ? "]" : ("jump Label_" + labelNum))));
                 labelNum++;
@@ -64,7 +65,6 @@ namespace GotaSequenceLib {
 
             //Return the sequence.
             return m;
-
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace GotaSequenceLib {
         /// <param name="vars">Variables.</param>
         /// <param name="trackMask">Allowed tracks.</param>
         /// <returns>The track.</returns>
-        public static void WriteTrack(Sequence m, Dictionary<int, int> tickMap, List<SequenceCommand> commands, int trackNum, Track t, Track metaTrack, int startIndex, ref short[] vars, int startTicks = 0, ushort trackMask = 0xFFFF) {
-
+        public static void WriteTrack(Sequence m, Dictionary<int, int> tickMap, List<SequenceCommand> commands, int trackNum, Sanford.Multimedia.Midi.Track t, Sanford.Multimedia.Midi.Track metaTrack, int startIndex, ref short[] vars, int startTicks = 0, ushort trackMask = 0xFFFF)
+        {
             //Current command.
             int currCommand = startIndex;
 
@@ -102,25 +102,34 @@ namespace GotaSequenceLib {
 
             //Get var.
             var Vars = vars;
-            short GetVar(int varNum, int h) {
-                if (varNum < 0x20) {
+            short GetVar(int varNum, int h)
+            {
+                if (varNum < 0x20)
+                {
                     return Vars[varNum];
-                } else {
+                }
+                else
+                {
                     return trackVars[varNum - 0x20];
                 }
             }
 
             //Set var.
-            void SetVar(int varNum, int h, short val) {
-                if (varNum < 0x20) {
+            void SetVar(int varNum, int h, short val)
+            {
+                if (varNum < 0x20)
+                {
                     Vars[varNum] = val;
-                } else {
+                }
+                else
+                {
                     trackVars[varNum - 0x20] = val;
                 }
             }
 
             //Loop forever.
-            while (currCommand < commands.Count) {
+            while (currCommand < commands.Count)
+            {
 
                 //Current command.
                 SequenceCommand c = commands[currCommand];
@@ -131,7 +140,8 @@ namespace GotaSequenceLib {
                 //Fetch arguments.
                 int numArgs = Player.NumArguments(c);
                 int[] args = new int[numArgs];
-                for (int i = 0; i < numArgs; i++) {
+                for (int i = 0; i < numArgs; i++)
+                {
                     args[i] = Player.GetCommandParameter(c, i, _rand, commands);
                 }
 
@@ -139,11 +149,15 @@ namespace GotaSequenceLib {
                 SequenceCommands trueCommandType = Player.GetTrueCommandType(c);
 
                 //No 0 track.
-                if ((trackMask & 0b1) == 0) {
-                    if (trueCommandType == SequenceCommands.OpenTrack) {
-                        if (((0b1 << args[0]) & trackMask) > 0) {
-                            while (m.Count - 1 < args[0]) {
-                                m.Add(new Track());
+                if ((trackMask & 0b1) == 0)
+                {
+                    if (trueCommandType == SequenceCommands.OpenTrack)
+                    {
+                        if (((0b1 << args[0]) & trackMask) > 0)
+                        {
+                            while (m.Count - 1 < args[0])
+                            {
+                                m.Add(new Sanford.Multimedia.Midi.Track());
                             }
                             WriteTrack(m, tickMap, commands, args[0], m[args[0]], metaTrack, args[1], ref vars, ticks);
                         }
@@ -153,13 +167,15 @@ namespace GotaSequenceLib {
                 }
 
                 //If command.
-                if (c.CommandType == SequenceCommands.If && !varFlag) {
+                if (c.CommandType == SequenceCommands.If && !varFlag)
+                {
                     currCommand++;
                     continue;
                 }
 
                 //Switch type.
-                switch (trueCommandType) {
+                switch (trueCommandType)
+                {
 
                     //Allocate trace.
                     case SequenceCommands.AllocateTrack:
@@ -185,9 +201,11 @@ namespace GotaSequenceLib {
 
                     //Open track.
                     case SequenceCommands.OpenTrack:
-                        if (((0b1 << args[0]) & trackMask) > 0) {
-                            while (m.Count - 1 < args[0]) {
-                                m.Add(new Track());
+                        if (((0b1 << args[0]) & trackMask) > 0)
+                        {
+                            while (m.Count - 1 < args[0])
+                            {
+                                m.Add(new Sanford.Multimedia.Midi.Track());
                             }
                             WriteTrack(m, tickMap, commands, args[0], m[args[0]], metaTrack, args[1], ref vars, ticks);
                         }
@@ -199,7 +217,8 @@ namespace GotaSequenceLib {
 
                     //Call.
                     case SequenceCommands.Call:
-                        if (callStackDepth < 3) {
+                        if (callStackDepth < 3)
+                        {
                             callStack[callStackDepth] = currCommand + 1;
                             callStackDepth++;
                             currCommand = args[0];
@@ -408,7 +427,8 @@ namespace GotaSequenceLib {
 
                     //Return.
                     case SequenceCommands.Return:
-                        if (callStackDepth != 0) {
+                        if (callStackDepth != 0)
+                        {
                             callStackDepth--;
                             currCommand = callStack[callStackDepth];
                             continue;
@@ -421,7 +441,8 @@ namespace GotaSequenceLib {
 
                     //Set var.
                     case SequenceCommands.SetVar:
-                        switch (args[0]) {
+                        switch (args[0])
+                        {
                             case 0:
                                 t.Insert(ticks, new ChannelMessage(ChannelCommand.Controller, trackNum, 16, args[1]));
                                 break;
@@ -483,20 +504,23 @@ namespace GotaSequenceLib {
                         break;
 
                     //Rand var.
-                    case SequenceCommands.RandVar: {
-                        bool negate = false;
-                        if (args[1] < 0) {
-                            negate = true;
-                            args[1] = (short)-args[1];
+                    case SequenceCommands.RandVar:
+                        {
+                            bool negate = false;
+                            if (args[1] < 0)
+                            {
+                                negate = true;
+                                args[1] = (short)-args[1];
+                            }
+                            short val = (short)_rand.Next(args[1] + 1);
+                            if (negate)
+                            {
+                                val = (short)-val;
+                            }
+                            SetVar(args[0], trackIndex, val);
+                            metaTrack.Insert(ticks, new MetaMessage(MetaType.Marker, Encoding.UTF8.GetBytes(trackNum + ": " + c.ToString())));
+                            break;
                         }
-                        short val = (short)_rand.Next(args[1] + 1);
-                        if (negate) {
-                            val = (short)-val;
-                        }
-                        SetVar(args[0], trackIndex, val);
-                        metaTrack.Insert(ticks, new MetaMessage(MetaType.Marker, Encoding.UTF8.GetBytes(trackNum + ": " + c.ToString())));
-                        break;
-                    }
 
                     //And var.
                     case SequenceCommands.AndVar:
@@ -568,14 +592,10 @@ namespace GotaSequenceLib {
                     default:
                         metaTrack.Insert(ticks, new MetaMessage(MetaType.Marker, Encoding.UTF8.GetBytes(trackNum + ": " + c.ToString())));
                         break;
-
                 }
-
                 //Increment command number.
                 currCommand++;
-
             }
-
         }
 
         /// <summary>
@@ -588,7 +608,8 @@ namespace GotaSequenceLib {
         /// <param name="timeBase">Time base.</param>
         /// <param name="privateLabelsForCalls">If the use private labels for calls.</param>
         /// <returns>The sequence commands.</returns>
-        public static List<SequenceCommand> ToSequenceCommands(Sequence s, out Dictionary<string, int> labels, out List<int> privateLabels, string sequenceName, int timeBase = 48, bool privateLabelsForCalls = false) {
+        public static List<SequenceCommand> ToSequenceCommands(Sequence s, out Dictionary<string, int> labels, out List<int> privateLabels, string sequenceName, int timeBase = 48, bool privateLabelsForCalls = false)
+        {
 
             //Commands.
             List<SequenceCommand> commands = new List<SequenceCommand>();
@@ -600,12 +621,14 @@ namespace GotaSequenceLib {
 
             //Allocate tracks.
             List<int> allocs = new List<int>();
-            if (s.Count > 1) {
+            if (s.Count > 1)
+            {
                 ushort alloc = 0;
-                for (int i = 0; i < s.Count; i++) {
+                for (int i = 0; i < s.Count; i++)
+                {
                     //if (s[i].Count > 0x32) {
-                        alloc |= (ushort)(0b1 << i);
-                        allocs.Add(i);
+                    alloc |= (ushort)(0b1 << i);
+                    allocs.Add(i);
                     //}
                 }
                 commands.Add(new SequenceCommand() { CommandType = SequenceCommands.AllocateTrack, Parameter = alloc });
@@ -613,7 +636,8 @@ namespace GotaSequenceLib {
 
             //Add open track parameters.
             int openTrackOff = commands.Count;
-            for (int i = 1; i < s.Count; i++) {
+            for (int i = 1; i < s.Count; i++)
+            {
                 commands.Add(new SequenceCommand() { CommandType = SequenceCommands.OpenTrack, Parameter = new OpenTrackParameter() { TrackNumber = (byte)i } });
             }
 
@@ -624,7 +648,8 @@ namespace GotaSequenceLib {
 
             //Read tracks.
             labels.Add("SMF_" + sequenceName + "_Start", 1);
-            for (int i = 0; i < allocs.Count; i++) {
+            for (int i = 0; i < allocs.Count; i++)
+            {
                 labels.Add("SMF_" + sequenceName + "_Track_" + allocs[i], commands.Count);
                 if (i != 0) { (commands[1 + i - 1].Parameter as OpenTrackParameter).m_Index = commands.Count; }
                 ReadTrack(commands, s, allocs[i], openTrackOff, labels, timeBase, sequenceName, otherLabelTicks, ref loopStartTicks, ref loopEndTicks);
@@ -653,14 +678,15 @@ namespace GotaSequenceLib {
         /// <param name="labels">Labels.</param>
         /// <param name="timeBase">Time base.</param>
         /// <param name="sequenceName">Sequence name.</param>
-        public static void ReadTrack(List<SequenceCommand> commands, Sequence s, int trackNum, int openTrackOffset, Dictionary<string, int> labels, int timeBase, string sequenceName, Dictionary<string, int> otherLabelTicks, ref int loopStartTicks, ref int loopEndTicks) {
-
+        public static void ReadTrack(List<SequenceCommand> commands, Sequence s, int trackNum, int openTrackOffset, Dictionary<string, int> labels, int timeBase, string sequenceName, Dictionary<string, int> otherLabelTicks, ref int loopStartTicks, ref int loopEndTicks)
+        {
             //Event pointer.
             int startTrackPointer = commands.Count;
 
             //Events.
             List<MidiEvent> events = new List<MidiEvent>();
-            for (int i = 0; i < s[trackNum].Count; i++) {
+            for (int i = 0; i < s[trackNum].Count; i++)
+            {
                 events.Add(s[trackNum].GetMidiEvent(i));
             }
             events = events.OrderBy(x => x.AbsoluteTicks).ToList();
@@ -675,8 +701,8 @@ namespace GotaSequenceLib {
             //Read each event.
             int eventNum = 0;
             int lastTick = 0;
-            foreach (var e in events) {
-
+            foreach (var e in events)
+            {
                 //Overtime.
                 uint overtime = 0;
 
@@ -705,12 +731,13 @@ namespace GotaSequenceLib {
                 }*/
 
                 //Switch event type.
-                switch (e.MidiMessage.MessageType) {
-
+                switch (e.MidiMessage.MessageType)
+                {
                     //Channel.
                     case MessageType.Channel:
                         var con = e.MidiMessage as ChannelMessage;
-                        switch (con.Command) {
+                        switch (con.Command)
+                        {
 
                             //Note.
                             case ChannelCommand.NoteOn:
@@ -719,8 +746,10 @@ namespace GotaSequenceLib {
                                 int len = 0;
                                 int key = con.Data1;
                                 AddWaitTime();
-                                for (int i = eventNum + 1; i < events.Count; i++) {
-                                    if (events[i].MidiMessage as ChannelMessage != null && (events[i].MidiMessage as ChannelMessage).Command == ChannelCommand.NoteOff && (events[i].MidiMessage as ChannelMessage).Data1 == key) {
+                                for (int i = eventNum + 1; i < events.Count; i++)
+                                {
+                                    if (events[i].MidiMessage as ChannelMessage != null && (events[i].MidiMessage as ChannelMessage).Command == ChannelCommand.NoteOff && (events[i].MidiMessage as ChannelMessage).Data1 == key)
+                                    {
                                         len = Midi2SequenceTicks(events[i].AbsoluteTicks - e.AbsoluteTicks, s.Division, timeBase);
                                         break;
                                     }
@@ -743,7 +772,8 @@ namespace GotaSequenceLib {
 
                             //Controller.
                             case ChannelCommand.Controller:
-                                switch ((ControllerType)con.Data1) {
+                                switch ((ControllerType)con.Data1)
+                                {
 
                                     //Bank select.
                                     case ControllerType.BankSelect:
@@ -1012,54 +1042,64 @@ namespace GotaSequenceLib {
 
                                     //Pitch bend range.
                                     case ControllerType.RegisteredParameterCoarse:
-                                        if (con.Data2 == 0 && (RPNFine0(1) || RPNFine0(-1))) {
-                                            if (RPNCourse(1)) {
+                                        if (con.Data2 == 0 && (RPNFine0(1) || RPNFine0(-1)))
+                                        {
+                                            if (RPNCourse(1))
+                                            {
                                                 AddWaitTime();
                                                 if (commands.Last().CommandType == SequenceCommands.BendRange) { break; }
                                                 commands.Add(new SequenceCommand() { CommandType = SequenceCommands.BendRange, Parameter = (byte)(events[eventNum + 1].MidiMessage as ChannelMessage).Data2 });
-                                            } else if (RPNCourse(2)) {
+                                            }
+                                            else if (RPNCourse(2))
+                                            {
                                                 AddWaitTime();
                                                 if (commands.Last().CommandType == SequenceCommands.BendRange) { break; }
                                                 commands.Add(new SequenceCommand() { CommandType = SequenceCommands.BendRange, Parameter = (byte)(events[eventNum + 2].MidiMessage as ChannelMessage).Data2 });
                                             }
                                         }
-                                        bool RPNFine0(int eventOff) {
+                                        bool RPNFine0(int eventOff)
+                                        {
                                             int off = eventNum + eventOff;
-                                            if (off < 0 || off >= events.Count) {
+                                            if (off < 0 || off >= events.Count)
+                                            {
                                                 return false;
                                             }
-                                            if (events[off].MidiMessage as ChannelMessage != null) {
-                                                if ((events[off].MidiMessage as ChannelMessage).Command == ChannelCommand.Controller && (events[off].MidiMessage as ChannelMessage).Data1 == (int)ControllerType.RegisteredParameterFine && (events[off].MidiMessage as ChannelMessage).Data2 == 0) {
+                                            if (events[off].MidiMessage as ChannelMessage != null)
+                                            {
+                                                if ((events[off].MidiMessage as ChannelMessage).Command == ChannelCommand.Controller && (events[off].MidiMessage as ChannelMessage).Data1 == (int)ControllerType.RegisteredParameterFine && (events[off].MidiMessage as ChannelMessage).Data2 == 0)
+                                                {
                                                     return true;
                                                 }
                                             }
                                             return false;
                                         }
-                                        bool RPNCourse(int eventOff) {
+                                        bool RPNCourse(int eventOff)
+                                        {
                                             int off = eventNum + eventOff;
-                                            if (off < 0 || off >= events.Count) {
+                                            if (off < 0 || off >= events.Count)
+                                            {
                                                 return false;
                                             }
-                                            if (events[off].MidiMessage as ChannelMessage != null) {
-                                                if ((events[off].MidiMessage as ChannelMessage).Command == ChannelCommand.Controller && (events[off].MidiMessage as ChannelMessage).Data1 == 6) {
+                                            if (events[off].MidiMessage as ChannelMessage != null)
+                                            {
+                                                if ((events[off].MidiMessage as ChannelMessage).Command == ChannelCommand.Controller && (events[off].MidiMessage as ChannelMessage).Data1 == 6)
+                                                {
                                                     return true;
                                                 }
                                             }
                                             return false;
                                         }
                                         break;
-
                                 }
                                 break;
-
                         }
                         break;
 
                     //Meta.
                     case MessageType.Meta:
                         var met = e.MidiMessage as MetaMessage;
-                        switch (met.MetaType) {
-
+                        switch (met.MetaType)
+                        {
                             //Tempo.
                             case MetaType.Tempo:
                                 AddWaitTime();
@@ -1073,45 +1113,57 @@ namespace GotaSequenceLib {
                             case MetaType.Marker:
                                 AddWaitTime();
                                 string dat = Encoding.UTF8.GetString(met.GetBytes());
-                                if (dat.Contains(": ")) {
-                                    try {
+                                if (dat.Contains(": "))
+                                {
+                                    try
+                                    {
                                         SequenceCommand c = new SequenceCommand(); //THIS DOES NOT TAKE CARE OF JUMPS AS IT WILL JUMP TO THE MARKER TRACK.
-                                        if (int.Parse(dat.Split(':')[0]) == trackNum) {
+                                        if (int.Parse(dat.Split(':')[0]) == trackNum)
+                                        {
                                             c.FromString(dat.Substring(dat.IndexOf(":") + 2), labels, new Dictionary<string, int>());
                                             commands.Add(c);
                                         }
-                                    } catch { }
-                                } else {
+                                    }
+                                    catch { }
+                                }
+                                else
+                                {
                                     string loopStartStr = "SMF_" + sequenceName + "_Track_" + trackNum + "_SSN_LOOPSTART";
                                     string loopEndStr = "SMF_" + sequenceName + "_Track_" + trackNum + "_SSN_LOOPEND";
-                                    if (!labels.ContainsKey(loopStartStr) && (dat.Equals("[") || dat.ToLower().Equals("loopstart") || dat.ToLower().Equals("loop_start"))) {
+                                    if (!labels.ContainsKey(loopStartStr) && (dat.Equals("[") || dat.ToLower().Equals("loopstart") || dat.ToLower().Equals("loop_start")))
+                                    {
                                         labels.Add(loopStartStr, commands.Count);
                                         loopStartTicks = e.AbsoluteTicks;
-                                    } else if (!labels.ContainsKey(loopEndStr) && (dat.Equals("]") || dat.ToLower().Equals("loopend") || dat.ToLower().Equals("loop_end"))) {
+                                    }
+                                    else if (!labels.ContainsKey(loopEndStr) && (dat.Equals("]") || dat.ToLower().Equals("loopend") || dat.ToLower().Equals("loop_end")))
+                                    {
                                         loopEndTicks = e.AbsoluteTicks;
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         labels.Add(dat, commands.Count);
                                     }
                                 }
                                 break;
-
                         }
                         break;
-                
                 }
 
                 //Event number.
                 eventNum++;
 
                 //Prevent cutting off from notes.
-                if (eventNum == events.Count && overtime != 0) {
+                if (eventNum == events.Count && overtime != 0)
+                {
                     commands.Add(new SequenceCommand() { CommandType = SequenceCommands.Wait, Parameter = overtime });
                 }
 
                 //Add wait time.
-                void AddWaitTime() {
+                void AddWaitTime()
+                {
                     int waitTime = e.AbsoluteTicks - lastTick;
-                    if (waitTime != 0) {
+                    if (waitTime != 0)
+                    {
                         commands.Add(new SequenceCommand() { CommandType = SequenceCommands.Wait, Parameter = (uint)Midi2SequenceTicks(waitTime, s.Division, timeBase) });
                     }
                     lastTick = e.AbsoluteTicks;
@@ -1124,7 +1176,6 @@ namespace GotaSequenceLib {
 
             //Set track offset.
             if (trackNum != 0) { (commands[openTrackOffset + trackNum - 1].Parameter as OpenTrackParameter).ReferenceCommand = commands[startTrackPointer]; }
-
         }
 
         /// <summary>
@@ -1132,8 +1183,8 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="pitchAmount">Change in pitch amount from -1 to 1.</param>
         /// <returns>The MSB and LSB.</returns>
-        public static Tuple<int, int> PitchBend2Midi(double pitchAmount) {
-
+        public static Tuple<int, int> PitchBend2Midi(double pitchAmount)
+        {
             //0 value is 0x2000.
             ushort zeroPitch = 0x2000;
 
@@ -1145,7 +1196,6 @@ namespace GotaSequenceLib {
             int msb = (pitch & 0x3F80) >> 7;
             int lsb = pitch & 0x7F;
             return new Tuple<int, int>(msb, lsb);
-
         }
 
         /// <summary>
@@ -1153,7 +1203,8 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="val">Value to scale.</param>
         /// <returns>Scaled value.</returns>
-        public static Tuple<int, int> Scale2Midi(int val) {
+        public static Tuple<int, int> Scale2Midi(int val)
+        {
             ushort v = (ushort)(val / 127d * 0x3FFF);
             int msb = (v & 0x3F80) >> 7;
             int lsb = v & 0x7F;
@@ -1167,7 +1218,8 @@ namespace GotaSequenceLib {
         /// <param name="division">MIDI division value.</param>
         /// <param name="timeBase">Sequence time base.</param>
         /// <returns>Sequence ticks.</returns>
-        public static int Midi2SequenceTicks(int midiTicks, int division, int timeBase = 48) {
+        public static int Midi2SequenceTicks(int midiTicks, int division, int timeBase = 48)
+        {
             return (int)(midiTicks / (double)division * timeBase);
         }
 
@@ -1178,7 +1230,8 @@ namespace GotaSequenceLib {
         /// <param name="division">Division.</param>
         /// <param name="timeBase">Time base.</param>
         /// <returns>Ticks in MIDI.</returns>
-        public static int Sequence2MidiTicks(int sequenceTicks, int division, int timeBase = 48) {
+        public static int Sequence2MidiTicks(int sequenceTicks, int division, int timeBase = 48)
+        {
             return (int)(sequenceTicks * division / (double)timeBase);
         }
 
@@ -1188,13 +1241,12 @@ namespace GotaSequenceLib {
         /// <param name="msb">MSB.</param>
         /// <param name="lsb">LSB.</param>
         /// <returns>Pitch value.</returns>
-        public static double Midi2PitchBend(int msb, int lsb) {
+        public static double Midi2PitchBend(int msb, int lsb)
+        {
             ushort val = (ushort)(msb << 7);
             val |= (ushort)(lsb & 0x7F);
             if (val > 0x3FFF) { val = 0x3FFF; }
             return (val - 0x2000) / (double)0x2000;
         }
-
     }
-
 }

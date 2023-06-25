@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace GotaSequenceLib {
-
+namespace GotaSequenceLib
+{
     /// <summary>
     /// UInt24 parameter.
     /// </summary>
-    public class UInt24Parameter {
-
+    public class UInt24Parameter
+    {
         /// <summary>
         /// Offset.
         /// </summary>
@@ -25,7 +21,8 @@ namespace GotaSequenceLib {
         /// Command index used when reading and writing.
         /// </summary>
         /// <param name="commands">The commands.</param>
-        public int Index(List<SequenceCommand> commands) {
+        public int Index(List<SequenceCommand> commands)
+        {
             return ReferenceCommand == null ? m_Index : ReferenceCommand.Index(commands);
         }
         public int m_Index;
@@ -34,7 +31,5 @@ namespace GotaSequenceLib {
         /// Label.
         /// </summary>
         public string Label;
-
     }
-
 }

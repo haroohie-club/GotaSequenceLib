@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GotaSequenceLib {
-
+﻿namespace GotaSequenceLib
+{
     /// <summary>
     /// Random parameter.
     /// </summary>
-    public class RandomParameter {
+    public class RandomParameter
+    {
 
         /// <summary>
         /// Command. Parameters are unused.
@@ -25,7 +20,5 @@ namespace GotaSequenceLib {
         /// Max.
         /// </summary>
         public short Max;
-
     }
-
 }

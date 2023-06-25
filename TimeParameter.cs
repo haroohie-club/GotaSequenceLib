@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GotaSequenceLib {
-
+﻿namespace GotaSequenceLib
+{
     /// <summary>
     /// Time parameter.
     /// </summary>
-    public class TimeParameter {
-
+    public class TimeParameter
+    {
         /// <summary>
         /// Command. Parameters are unused.
         /// </summary>
@@ -20,7 +14,5 @@ namespace GotaSequenceLib {
         /// Time change value.
         /// </summary>
         public short Value;
-
     }
-
 }

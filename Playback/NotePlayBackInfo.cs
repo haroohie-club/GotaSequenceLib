@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GotaSequenceLib.Playback {
-
+﻿namespace GotaSequenceLib.Playback
+{
     /// <summary>
     /// Note playback info.
     /// </summary>
-    public class NotePlayBackInfo {
-
+    public class NotePlayBackInfo
+    {
         /// <summary>
         /// Wave Id. Duty cycle if PSG.
         /// </summary>
@@ -90,7 +84,5 @@ namespace GotaSequenceLib.Playback {
         /// Linear interpolation. TODO!!!
         /// </summary>
         public bool IsLinearInterpolation = false;
-
     }
-
 }

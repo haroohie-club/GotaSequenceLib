@@ -1,17 +1,13 @@
 ﻿using GotaSoundIO.IO;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GotaSequenceLib {
-
+namespace GotaSequenceLib
+{
     /// <summary>
     /// Sequence platform.
     /// </summary>
-    public abstract class SequencePlatform {
-
+    public abstract class SequencePlatform
+    {
         /// <summary>
         /// Command map.
         /// </summary>
@@ -29,7 +25,5 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <returns>The byte order of sequence data.</returns>
         public abstract ByteOrder SequenceDataByteOrder();
-
     }
-
 }

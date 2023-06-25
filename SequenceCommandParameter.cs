@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GotaSequenceLib {
-
+﻿namespace GotaSequenceLib
+{
     /// <summary>
     /// Sequence command type.
     /// </summary>
-    public enum SequenceCommandParameter {
+    public enum SequenceCommandParameter
+    {
         NoteParam,
         OpenTrack,
         VariableLength,
@@ -29,5 +24,4 @@ namespace GotaSequenceLib {
         U8S16,
         None
     }
-
 }

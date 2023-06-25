@@ -1,10 +1,10 @@
-﻿namespace GotaSequenceLib.Playback {
-
+﻿namespace GotaSequenceLib.Playback
+{
     /// <summary>
     /// Utils.
     /// </summary>
-    public static class Utils {
-
+    public static class Utils
+    {
         public static readonly byte[] AttackTable = new byte[128]
         {
             255, 254, 253, 252, 251, 250, 249, 248,
@@ -74,15 +74,22 @@
             127
         };
 
-        public static int Sin(int index) {
-            if (index < 0x20) {
+        public static int Sin(int index)
+        {
+            if (index < 0x20)
+            {
                 return _sinTable[index];
-            } else if (index < 0x40) {
+            }
+            else if (index < 0x40)
+            {
                 return _sinTable[0x20 - (index - 0x20)];
-            } else if (index < 0x60) {
+            }
+            else if (index < 0x60)
+            {
                 return -_sinTable[index - 0x40];
-            } else // < 0x80
-              {
+            }
+            else // < 0x80
+            {
                 return -_sinTable[0x20 - (index - 0x60)];
             }
         }
@@ -282,52 +289,65 @@
             124, 125, 126, 127
         };
 
-        public static ushort GetChannelTimer(ushort baseTimer, int pitch) {
+        public static ushort GetChannelTimer(ushort baseTimer, int pitch)
+        {
             int shift = 0;
             pitch = -pitch;
 
-            while (pitch < 0) {
+            while (pitch < 0)
+            {
                 shift--;
                 pitch += 0x300;
             }
 
-            while (pitch >= 0x300) {
+            while (pitch >= 0x300)
+            {
                 shift++;
                 pitch -= 0x300;
             }
 
             ulong timer = (_pitchTable[pitch] + 0x10000uL) * baseTimer;
             shift -= 16;
-            if (shift <= 0) {
+            if (shift <= 0)
+            {
                 timer >>= -shift;
-            } else if (shift < 32) {
-                if ((timer & (ulong.MaxValue << (32 - shift))) != 0) {
+            }
+            else if (shift < 32)
+            {
+                if ((timer & (ulong.MaxValue << (32 - shift))) != 0)
+                {
                     return ushort.MaxValue;
                 }
                 timer <<= shift;
-            } else {
+            }
+            else
+            {
                 return ushort.MaxValue;
             }
 
-            if (timer < 0x10) {
+            if (timer < 0x10)
+            {
                 return 0x10;
             }
-            if (timer > ushort.MaxValue) {
+            if (timer > ushort.MaxValue)
+            {
                 timer = ushort.MaxValue;
             }
             return (ushort)timer;
         }
 
-        public static byte GetChannelVolume(int vol) {
+        public static byte GetChannelVolume(int vol)
+        {
             int a = vol / 0x80;
-            if (a < -723) {
+            if (a < -723)
+            {
                 a = -723;
-            } else if (a > 0) {
+            }
+            else if (a > 0)
+            {
                 a = 0;
             }
             return _volumeTable[a + 723];
         }
-
-    }
-
+    }   
 }

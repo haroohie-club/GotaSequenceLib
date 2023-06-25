@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GotaSequenceLib {
-
+﻿namespace GotaSequenceLib
+{
     /// <summary>
     /// Raw note.
     /// </summary>
-    public enum Notes : byte {
-
+    public enum Notes : byte
+    {
         //-1
         cnm1,
         csm1,
@@ -160,7 +154,5 @@ namespace GotaSequenceLib {
         fn9,
         fs9,
         gn9,
-
     }
-
 }

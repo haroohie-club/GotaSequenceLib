@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GotaSequenceLib {
-
+﻿namespace GotaSequenceLib
+{
     /// <summary>
     /// Note parameter.
     /// </summary>
-    public class NoteParameter {
-
+    public class NoteParameter
+    {
         /// <summary>
         /// Note.
         /// </summary>
@@ -24,7 +18,5 @@ namespace GotaSequenceLib {
         /// Length.
         /// </summary>
         public uint Length;
-
     }
-
 }

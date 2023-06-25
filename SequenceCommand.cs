@@ -1,18 +1,15 @@
 ﻿using GotaSoundIO.IO;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GotaSequenceLib {
-
+namespace GotaSequenceLib
+{
     /// <summary>
     /// Sequence command.
     /// </summary>
-    public class SequenceCommand {
-
+    public class SequenceCommand
+    {
         /// <summary>
         /// Command type.
         /// </summary>
@@ -38,7 +35,8 @@ namespace GotaSequenceLib {
         /// <summary>
         /// Command parameters.
         /// </summary>
-        public static Dictionary<SequenceCommands, SequenceCommandParameter> CommandParameters = new Dictionary<SequenceCommands, SequenceCommandParameter>() {
+        public static Dictionary<SequenceCommands, SequenceCommandParameter> CommandParameters = new Dictionary<SequenceCommands, SequenceCommandParameter>()
+        {
             { SequenceCommands.Note, SequenceCommandParameter.NoteParam },
             { SequenceCommands.Wait, SequenceCommandParameter.VariableLength },
             { SequenceCommands.ProgramChange, SequenceCommandParameter.VariableLength },
@@ -151,7 +149,8 @@ namespace GotaSequenceLib {
         /// <summary>
         /// Command strings.
         /// </summary>
-        public static Dictionary<SequenceCommands, string> CommandStrings = new Dictionary<SequenceCommands, string>() {
+        public static Dictionary<SequenceCommands, string> CommandStrings = new Dictionary<SequenceCommands, string>()
+        {
             { SequenceCommands.Wait, "wait" },
             { SequenceCommands.ProgramChange, "prg" },
             { SequenceCommands.OpenTrack, "opentrack" },
@@ -262,7 +261,8 @@ namespace GotaSequenceLib {
         /// <summary>
         /// Parameter mode.
         /// </summary>
-        public enum ParameterMode { 
+        public enum ParameterMode
+        {
             Normal,
             Extended,
             NoParameter
@@ -274,30 +274,37 @@ namespace GotaSequenceLib {
         /// <param name="r">The reader.</param>
         /// <param name="p">The platform.</param>
         /// <param name="parameterMode">Command read mode.</param>
-        public void Read(FileReader r, SequencePlatform p, ParameterMode parameterMode = ParameterMode.Normal) {
+        public void Read(FileReader r, SequencePlatform p, ParameterMode parameterMode = ParameterMode.Normal)
+        {
 
             //Set byte order.
             r.ByteOrder = p.SequenceDataByteOrder();
 
             //Get the type.
             byte identifier = r.ReadByte();
-            if (parameterMode != ParameterMode.Extended) {
+            if (parameterMode != ParameterMode.Extended)
+            {
                 CommandType = p.CommandMap().FirstOrDefault(x => x.Value == identifier).Key;
-            } else {
+            }
+            else
+            {
                 CommandType = p.ExtendedCommands().FirstOrDefault(x => x.Value == identifier).Key;
             }
 
             //Note.
-            if (identifier < 0x80) {
+            if (identifier < 0x80)
+            {
                 CommandType = SequenceCommands.Note;
             }
 
             //Switch the parameter type.
-            switch (CommandParameters[CommandType]) {
+            switch (CommandParameters[CommandType])
+            {
 
                 //Note command.
                 case SequenceCommandParameter n when (int)CommandType < 0x80:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         Parameter = new NoteParameter() { Note = (Notes)identifier, Velocity = r.ReadByte() };
                         return;
                     }
@@ -306,7 +313,8 @@ namespace GotaSequenceLib {
 
                 //Open track.
                 case SequenceCommandParameter.OpenTrack:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         Parameter = new OpenTrackParameter() { TrackNumber = r.ReadByte() };
                         return;
                     }
@@ -315,7 +323,8 @@ namespace GotaSequenceLib {
 
                 //Variable length.
                 case SequenceCommandParameter.VariableLength:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     Parameter = VariableLength.ReadVariableLength(r, 4);
@@ -323,7 +332,8 @@ namespace GotaSequenceLib {
 
                 //U24.
                 case SequenceCommandParameter.U24:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     Parameter = new UInt24Parameter() { Offset = r.Read<UInt24>() };
@@ -368,12 +378,13 @@ namespace GotaSequenceLib {
                 case SequenceCommandParameter.TimeVariable:
                     SequenceCommand tvSeq = new SequenceCommand();
                     tvSeq.Read(r, p, ParameterMode.Normal);
-                    Parameter = new VariableParameter() { Command = tvSeq, Variable = r.ReadByte() }; 
+                    Parameter = new VariableParameter() { Command = tvSeq, Variable = r.ReadByte() };
                     break;
 
                 //U8.
                 case SequenceCommandParameter.U8:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     Parameter = r.ReadByte();
@@ -381,7 +392,8 @@ namespace GotaSequenceLib {
 
                 //S8.
                 case SequenceCommandParameter.S8:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     Parameter = r.ReadSByte();
@@ -389,7 +401,8 @@ namespace GotaSequenceLib {
 
                 //Bool.
                 case SequenceCommandParameter.Bool:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     Parameter = r.ReadBoolean();
@@ -397,7 +410,8 @@ namespace GotaSequenceLib {
 
                 //U16.
                 case SequenceCommandParameter.U16:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     Parameter = r.ReadUInt16();
@@ -405,7 +419,8 @@ namespace GotaSequenceLib {
 
                 //S16.
                 case SequenceCommandParameter.S16:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     Parameter = r.ReadInt16();
@@ -413,7 +428,8 @@ namespace GotaSequenceLib {
 
                 //U8 S16.
                 case SequenceCommandParameter.U8S16:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         Parameter = new U8S16Parameter() { U8 = r.ReadByte() };
                         return;
                     }
@@ -438,33 +454,44 @@ namespace GotaSequenceLib {
         /// <param name="w">The writer.</param>
         /// <param name="p">The platform.</param>
         /// <param name="parameterMode">Parameter mode.</param>
-        public void Write(FileWriter w, SequencePlatform p, ParameterMode parameterMode = ParameterMode.Normal) {
-
+        public void Write(FileWriter w, SequencePlatform p, ParameterMode parameterMode = ParameterMode.Normal)
+        {
             //Set endian.
             w.ByteOrder = p.SequenceDataByteOrder();
 
             //Write command type.
-            if (parameterMode != ParameterMode.Extended) {
-                if (CommandType == SequenceCommands.Note) {
+            if (parameterMode != ParameterMode.Extended)
+            {
+                if (CommandType == SequenceCommands.Note)
+                {
                     w.Write((byte)(Parameter as NoteParameter).Note);
-                } else {
-                    if (p.ExtendedCommands().ContainsKey(CommandType)) {
+                }
+                else
+                {
+                    if (p.ExtendedCommands().ContainsKey(CommandType))
+                    {
                         w.Write(p.CommandMap()[SequenceCommands.Extended]);
                         w.Write(p.ExtendedCommands()[CommandType]);
-                    } else {
+                    }
+                    else
+                    {
                         w.Write(p.CommandMap()[CommandType]);
                     }
                 }
-            } else {
+            }
+            else
+            {
                 w.Write(p.ExtendedCommands()[CommandType]);
             }
 
             //Write parameters.
-            switch (CommandParameters[CommandType]) {
+            switch (CommandParameters[CommandType])
+            {
 
                 //Note command.
                 case SequenceCommandParameter n when (int)CommandType < 0x80:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         w.Write((Parameter as NoteParameter).Velocity);
                         return;
                     }
@@ -474,7 +501,8 @@ namespace GotaSequenceLib {
 
                 //Open track.
                 case SequenceCommandParameter.OpenTrack:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         w.Write((Parameter as OpenTrackParameter).TrackNumber);
                         return;
                     }
@@ -484,7 +512,8 @@ namespace GotaSequenceLib {
 
                 //Variable length.
                 case SequenceCommandParameter.VariableLength:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     VariableLength.WriteVariableLength(w, (uint)Parameter);
@@ -492,7 +521,8 @@ namespace GotaSequenceLib {
 
                 //U24.
                 case SequenceCommandParameter.U24:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     w.Write((Parameter as UInt24Parameter).Offset);
@@ -537,7 +567,8 @@ namespace GotaSequenceLib {
 
                 //U8.
                 case SequenceCommandParameter.U8:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     w.Write((byte)Parameter);
@@ -545,7 +576,8 @@ namespace GotaSequenceLib {
 
                 //S8.
                 case SequenceCommandParameter.S8:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     w.Write((sbyte)Parameter);
@@ -553,7 +585,8 @@ namespace GotaSequenceLib {
 
                 //Bool.
                 case SequenceCommandParameter.Bool:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     w.Write((bool)Parameter);
@@ -561,7 +594,8 @@ namespace GotaSequenceLib {
 
                 //U16.
                 case SequenceCommandParameter.U16:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     w.Write((ushort)Parameter);
@@ -569,7 +603,8 @@ namespace GotaSequenceLib {
 
                 //S16.
                 case SequenceCommandParameter.S16:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         return;
                     }
                     w.Write((short)Parameter);
@@ -577,7 +612,8 @@ namespace GotaSequenceLib {
 
                 //U8 S16.
                 case SequenceCommandParameter.U8S16:
-                    if (parameterMode == ParameterMode.NoParameter) {
+                    if (parameterMode == ParameterMode.NoParameter)
+                    {
                         w.Write((Parameter as U8S16Parameter).U8);
                         return;
                     }
@@ -589,19 +625,19 @@ namespace GotaSequenceLib {
                 case SequenceCommandParameter.Extended:
                     (Parameter as SequenceCommand).Write(w, p, ParameterMode.Extended);
                     break;
-
             }
-
         }
 
         /// <summary>
         /// Convert the command to a string.
         /// </summary>
         /// <returns>The command as a string.</returns>
-        public override string ToString() {
+        public override string ToString()
+        {
             var t = ToString(false);
             string ret = t.Item1;
-            for (int i = 0; i < t.Item2.Count; i++) { 
+            for (int i = 0; i < t.Item2.Count; i++)
+            {
                 if (i != 0) { ret += ","; }
                 ret += " ";
                 ret += t.Item2[i];
@@ -614,13 +650,17 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="noParameters">If there are no parameters.</param>
         /// <returns>The command as a string.</returns>
-        public Tuple<string, List<string>> ToString(bool noParameters) {
+        public Tuple<string, List<string>> ToString(bool noParameters)
+        {
 
             //Command string.
             string command = "";
-            if ((int)CommandType < 0x80) {
+            if ((int)CommandType < 0x80)
+            {
                 command = ((Notes)(Parameter as NoteParameter).Note).ToString();
-            } else {
+            }
+            else
+            {
                 command = CommandStrings[CommandType];
                 if (command.StartsWith("_")) { command = ""; }
             }
@@ -629,12 +669,14 @@ namespace GotaSequenceLib {
             List<string> data = new List<string>();
 
             //Get parameters.
-            switch (CommandParameters[CommandType]) {
+            switch (CommandParameters[CommandType])
+            {
 
                 //Note command.
                 case SequenceCommandParameter n when (int)CommandType < 0x80:
                     data.Add((Parameter as NoteParameter).Velocity.ToString());
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add((Parameter as NoteParameter).Length.ToString());
                     }
                     break;
@@ -642,21 +684,24 @@ namespace GotaSequenceLib {
                 //Open track.
                 case SequenceCommandParameter.OpenTrack:
                     data.Add((Parameter as OpenTrackParameter).TrackNumber.ToString());
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add((Parameter as OpenTrackParameter).Label);
                     }
                     break;
 
                 //Variable length.
                 case SequenceCommandParameter.VariableLength:
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add(Parameter.ToString());
                     }
                     break;
 
                 //U24.
                 case SequenceCommandParameter.U24:
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add((Parameter as UInt24Parameter).Label.ToString());
                     }
                     break;
@@ -712,35 +757,40 @@ namespace GotaSequenceLib {
 
                 //U8.
                 case SequenceCommandParameter.U8:
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add(Parameter.ToString());
                     }
                     break;
 
                 //U8.
                 case SequenceCommandParameter.S8:
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add(Parameter.ToString());
                     }
                     break;
 
                 //Bool.
                 case SequenceCommandParameter.Bool:
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         command += (CommandType == SequenceCommands.Tie ? "" : "_") + (((bool)Parameter) ? "on" : "off");
                     }
                     break;
 
                 //U16.
                 case SequenceCommandParameter.U16:
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add(Parameter.ToString());
                     }
                     break;
 
                 //S16.
                 case SequenceCommandParameter.S16:
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add(Parameter.ToString());
                     }
                     break;
@@ -748,7 +798,8 @@ namespace GotaSequenceLib {
                 //U8 S16.
                 case SequenceCommandParameter.U8S16:
                     data.Add((Parameter as U8S16Parameter).U8.ToString());
-                    if (!noParameters) {
+                    if (!noParameters)
+                    {
                         data.Add((Parameter as U8S16Parameter).S16.ToString());
                     }
                     break;
@@ -770,8 +821,8 @@ namespace GotaSequenceLib {
         /// <param name="s">The command string.</param>
         /// <param name="publicLabels">Public labels.</param>
         /// <param name="privateLabels">Private labels.</param>
-        public void FromString(string s, Dictionary<string, int> publicLabels, Dictionary<string, int> privateLabels) {
-
+        public void FromString(string s, Dictionary<string, int> publicLabels, Dictionary<string, int> privateLabels)
+        {
             //Get base command.
             SequenceCommands b = SequenceCommands.Note;
 
@@ -790,8 +841,10 @@ namespace GotaSequenceLib {
             if (cT.EndsWith("_r")) { cT = cT.Replace("_r", ""); }
 
             //Get command type.
-            foreach (var e in CommandStrings) {
-                if (!e.Value.StartsWith("_") && (cT.Equals(e.Value) || c.Equals(e.Value))) {
+            foreach (var e in CommandStrings)
+            {
+                if (!e.Value.StartsWith("_") && (cT.Equals(e.Value) || c.Equals(e.Value)))
+                {
                     b = e.Key;
                     if (c.Contains("porta") && !c.Contains("porta_on") && !c.Contains("porta_off")) { b = SequenceCommands.Porta; }
                     if (c.Contains("porta_time")) { b = SequenceCommands.PortaTime; }
@@ -813,29 +866,39 @@ namespace GotaSequenceLib {
             bool isRandom = false;
 
             //Footer flags.
-            if (c.Contains("_if_") || c.Contains("_if ") || c.EndsWith("_if")) {
+            if (c.Contains("_if_") || c.Contains("_if ") || c.EndsWith("_if"))
+            {
                 isIf = true;
             }
 
             //Middle flags.
-            if (c.Contains("_tv_") || c.Contains("_tv ") || c.EndsWith("_tv")) {
+            if (c.Contains("_tv_") || c.Contains("_tv ") || c.EndsWith("_tv"))
+            {
                 isTimeVariable = true;
-            } else if (c.Contains("_tr_") || c.Contains("_tr ") || c.EndsWith("_tr")) {
+            }
+            else if (c.Contains("_tr_") || c.Contains("_tr ") || c.EndsWith("_tr"))
+            {
                 isTimeRandom = true;
-            } else if (c.Contains("_t_") || c.Contains("_t ") || c.EndsWith("_t")) {
+            }
+            else if (c.Contains("_t_") || c.Contains("_t ") || c.EndsWith("_t"))
+            {
                 isTime = true;
             }
 
             //Header flags.
-            if (c.Contains("_v_") || c.Contains("_v ") || c.EndsWith("_v")) {
+            if (c.Contains("_v_") || c.Contains("_v ") || c.EndsWith("_v"))
+            {
                 isVariable = true;
-            } else if (c.Contains("_r_") || c.Contains("_r ") || c.EndsWith("_r")) {
+            }
+            else if (c.Contains("_r_") || c.Contains("_r ") || c.EndsWith("_r"))
+            {
                 isRandom = true;
             }
 
             //Bool data.
             bool boolParam = false;
-            if (c.Contains("on")) {
+            if (c.Contains("on"))
+            {
                 boolParam = true;
             }
 
@@ -849,92 +912,116 @@ namespace GotaSequenceLib {
             bool noLastParameter = isRandom || isVariable;
 
             //Read data.
-            switch (CommandParameters[b]) {
+            switch (CommandParameters[b])
+            {
                 case SequenceCommandParameter.Bool:
                     Parameter = boolParam;
                     break;
                 case SequenceCommandParameter.NoteParam:
                     string note = c;
                     try { note = note.Substring(0, note.IndexOf("_")); } catch { }
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = new NoteParameter() { Note = (Notes)Enum.Parse(typeof(Notes), note), Velocity = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels), Length = (uint)ParseData(data[dataPtr++], publicLabels, privateLabels) };
-                    } else {
+                    }
+                    else
+                    {
                         Parameter = new NoteParameter() { Note = (Notes)Enum.Parse(typeof(Notes), note), Velocity = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                     }
                     break;
                 case SequenceCommandParameter.OpenTrack:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = new OpenTrackParameter() { TrackNumber = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels), m_Index = (int)ParseData(data[dataPtr++], publicLabels, privateLabels) };
-                    } else {
+                    }
+                    else
+                    {
                         Parameter = new OpenTrackParameter() { TrackNumber = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                     }
                     break;
                 case SequenceCommandParameter.S16:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = (short)ParseData(data[dataPtr++], publicLabels, privateLabels);
                     }
                     break;
                 case SequenceCommandParameter.U16:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = (ushort)ParseData(data[dataPtr++], publicLabels, privateLabels);
                     }
                     break;
                 case SequenceCommandParameter.U24:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = new UInt24Parameter() { m_Index = (int)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                     }
                     break;
                 case SequenceCommandParameter.U8:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels);
                     }
                     break;
                 case SequenceCommandParameter.S8:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = (sbyte)ParseData(data[dataPtr++], publicLabels, privateLabels);
                     }
                     break;
                 case SequenceCommandParameter.U8S16:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = new U8S16Parameter() { U8 = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels), S16 = (short)ParseData(data[dataPtr++], publicLabels, privateLabels) };
-                    } else {
+                    }
+                    else
+                    {
                         Parameter = new U8S16Parameter() { U8 = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                     }
                     break;
                 case SequenceCommandParameter.VariableLength:
-                    if (!noLastParameter) {
+                    if (!noLastParameter)
+                    {
                         Parameter = (uint)ParseData(data[dataPtr++], publicLabels, privateLabels);
                     }
                     break;
             }
 
             //Header flags.
-            if (isRandom) {
+            if (isRandom)
+            {
                 Parameter = new RandomParameter() { Command = Duplicate(), Min = (short)ParseData(data[dataPtr++], publicLabels, privateLabels), Max = (short)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                 CommandType = SequenceCommands.Random;
-            } else if (isVariable) {
+            }
+            else if (isVariable)
+            {
                 Parameter = new VariableParameter() { Command = Duplicate(), Variable = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                 CommandType = SequenceCommands.Variable;
             }
 
             //Middle flags.
-            if (isTime) {
+            if (isTime)
+            {
                 Parameter = new TimeParameter() { Command = Duplicate(), Value = (short)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                 CommandType = SequenceCommands.Time;
-            } else if (isTimeRandom) {
+            }
+            else if (isTimeRandom)
+            {
                 Parameter = new RandomParameter() { Command = Duplicate(), Min = (short)ParseData(data[dataPtr++], publicLabels, privateLabels), Max = (short)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                 CommandType = SequenceCommands.TimeRandom;
-            } else if (isTimeVariable) {
+            }
+            else if (isTimeVariable)
+            {
                 Parameter = new VariableParameter() { Command = Duplicate(), Variable = (byte)ParseData(data[dataPtr++], publicLabels, privateLabels) };
                 CommandType = SequenceCommands.TimeVariable;
             }
 
             //Footer flags.
-            if (isIf) {
+            if (isIf)
+            {
                 Parameter = Duplicate();
                 CommandType = SequenceCommands.If;
             }
-
         }
 
         /// <summary>
@@ -944,37 +1031,47 @@ namespace GotaSequenceLib {
         /// <param name="publicLabels">The public labels.</param>
         /// <param name="privateLabels">The private labels.</param>
         /// <returns>The data.</returns>
-        private long ParseData(string data, Dictionary<string, int> publicLabels, Dictionary<string, int> privateLabels) {
-
+        private long ParseData(string data, Dictionary<string, int> publicLabels, Dictionary<string, int> privateLabels)
+        {
             //Labels.
-            if (publicLabels.ContainsKey(data)) {
+            if (publicLabels.ContainsKey(data))
+            {
                 return publicLabels[data];
             }
-            if (privateLabels.ContainsKey(data)) {
+            if (privateLabels.ContainsKey(data))
+            {
                 return privateLabels[data];
             }
 
             //Just parse it as a number.
-            if (data.StartsWith("0x")) {
+            if (data.StartsWith("0x"))
+            {
                 return Convert.ToInt64(data.Substring(2), 16);
-            } else if (data.StartsWith("0o")) { 
+            }
+            else if (data.StartsWith("0o"))
+            {
                 return Convert.ToInt64(data.Substring(2), 8);
-            }else if (data.StartsWith("0b")) {
+            }
+            else if (data.StartsWith("0b"))
+            {
                 return Convert.ToInt64(data.Substring(2), 2);
-            } else {
+            }
+            else
+            {
                 return long.Parse(data);
             }
-
         }
 
         /// <summary>
         /// Duplicate the command.
         /// </summary>
         /// <returns>A duplicate command.</returns>
-        public SequenceCommand Duplicate() {
+        public SequenceCommand Duplicate()
+        {
             SequenceCommand seq = new SequenceCommand();
             seq.CommandType = CommandType;
-            switch (CommandParameters[seq.CommandType]) {
+            switch (CommandParameters[seq.CommandType])
+            {
                 case SequenceCommandParameter.Bool:
                     try { seq.Parameter = (bool)Parameter; } catch { }
                     break;
@@ -1018,7 +1115,7 @@ namespace GotaSequenceLib {
                     try { seq.Parameter = (sbyte)Parameter; } catch { }
                     break;
                 case SequenceCommandParameter.U8S16:
-                    try { seq.Parameter = new U8S16Parameter() { U8 = (Parameter as U8S16Parameter).U8, S16 = (Parameter as U8S16Parameter).S16 }; } catch { seq.Parameter = new U8S16Parameter() { U8 = (Parameter as U8S16Parameter).U8}; }
+                    try { seq.Parameter = new U8S16Parameter() { U8 = (Parameter as U8S16Parameter).U8, S16 = (Parameter as U8S16Parameter).S16 }; } catch { seq.Parameter = new U8S16Parameter() { U8 = (Parameter as U8S16Parameter).U8 }; }
                     break;
                 case SequenceCommandParameter.Variable:
                     seq.Parameter = new VariableParameter() { Command = (Parameter as VariableParameter).Command.Duplicate(), Variable = (Parameter as VariableParameter).Variable };
@@ -1029,7 +1126,5 @@ namespace GotaSequenceLib {
             }
             return seq;
         }
-
     }
-
 }

@@ -1,21 +1,19 @@
 ﻿using GotaSoundIO.IO;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GotaSequenceLib {
-
+namespace GotaSequenceLib
+{
     /// <summary>
     /// Nintendo DS.
     /// </summary>
-    public class Nitro : SequencePlatform {
+    public class Nitro : SequencePlatform
+    {
         /// <summary>
         /// Command map.
         /// </summary>
         /// <returns>The commands mapped.</returns>
-        public override Dictionary<SequenceCommands, byte> CommandMap() => new Dictionary<SequenceCommands, byte>() {
+        public override Dictionary<SequenceCommands, byte> CommandMap() => new Dictionary<SequenceCommands, byte>()
+        {
             { SequenceCommands.Wait, 0x80 },
             { SequenceCommands.ProgramChange, 0x81 },
             { SequenceCommands.OpenTrack, 0x93 },
@@ -73,7 +71,7 @@ namespace GotaSequenceLib {
         /// Extended commands.
         /// </summary>
         /// <returns>The extended commands mapped.</returns>
-        public override Dictionary<SequenceCommands, byte> ExtendedCommands() => new Dictionary<SequenceCommands, byte>() {};
+        public override Dictionary<SequenceCommands, byte> ExtendedCommands() => new Dictionary<SequenceCommands, byte>() { };
 
         /// <summary>
         /// Sequence data byte order.

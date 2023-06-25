@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GotaSequenceLib {
-
+﻿namespace GotaSequenceLib
+{
     /// <summary>
     /// Sequence command id.
     /// </summary>
-    public enum SequenceCommands {
+    public enum SequenceCommands
+    {
         Note,
         Wait = 0x80,
         ProgramChange,
@@ -118,5 +113,4 @@ namespace GotaSequenceLib {
         Mod4Period,
         UserCall
     }
-
 }

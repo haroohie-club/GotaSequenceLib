@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GotaSequenceLib {
+namespace GotaSequenceLib
+{
 
     /// <summary>
     /// Sequence file.
     /// </summary>
-    public abstract class SequenceFile : IOFile {
+    public abstract class SequenceFile : IOFile
+    {
 
         /// <summary>
         /// Commands.
@@ -63,23 +63,26 @@ namespace GotaSequenceLib {
         /// <summary>
         /// Blank constructor.
         /// </summary>
-        public SequenceFile() {}
+        public SequenceFile() { }
 
         /// <summary>
         /// Reads the sequence file from a file path.
         /// </summary>
         /// <param name="filePath">The file path.</param>
-        public SequenceFile(string filePath) : base(filePath) {}
+        public SequenceFile(string filePath) : base(filePath) { }
 
         /// <summary>
         /// Read command data into the commands list.
         /// </summary>
         /// <param name="globalMode">If to make private labels global.</param>
-        public void ReadCommandData(bool globalMode = false) {
+        public void ReadCommandData(bool globalMode = false)
+        {
 
             //New reader.
-            using (MemoryStream src = new MemoryStream(RawData)) {
-                using (FileReader r = new FileReader(src)) {
+            using (MemoryStream src = new MemoryStream(RawData))
+            {
+                using (FileReader r = new FileReader(src))
+                {
 
                     //Command index.
                     int commandInd = 0;
@@ -98,17 +101,22 @@ namespace GotaSequenceLib {
                     OtherLabels = new List<int>();
 
                     //Read until end.
-                    while (r.Position < RawData.Length) {
+                    while (r.Position < RawData.Length)
+                    {
 
                         //Add command index.
                         offsetMap.Add((uint)r.Position, commandInd);
 
                         //MIDI2SSEQ fix because it doesn't understand that jumps use UInt24, not UInt32.
-                        if (r.Position < RawData.Length - 1 && Commands.Count > 0 && Commands.Last().CommandType == SequenceCommands.Jump) {
+                        if (r.Position < RawData.Length - 1 && Commands.Count > 0 && Commands.Last().CommandType == SequenceCommands.Jump)
+                        {
                             long bak = r.Position;
-                            if (r.ReadByte() == 0) {
+                            if (r.ReadByte() == 0)
+                            {
                                 continue;
-                            } else {
+                            }
+                            else
+                            {
                                 r.Position = bak;
                             }
                         }
@@ -122,19 +130,22 @@ namespace GotaSequenceLib {
                     }
 
                     //Public labels.
-                    for (int i = 0; i < Labels.Count; i++) {
+                    for (int i = 0; i < Labels.Count; i++)
+                    {
                         PublicLabels.Add(Labels.Keys.ElementAt(i), offsetMap[Labels.Values.ElementAt(i)]);
                     }
 
                     //Get labels.
-                    for (int i = 0; i < Commands.Count; i++) {
+                    for (int i = 0; i < Commands.Count; i++)
+                    {
 
                         //Command index.
                         int commandIndex = 0;
 
                         //Switch the type.
                         SequenceCommands trueType = Playback.Player.GetTrueCommandType(Commands[i]);
-                        switch (trueType) {
+                        switch (trueType)
+                        {
 
                             //It has an offset.
                             case SequenceCommands.Call:
@@ -149,13 +160,17 @@ namespace GotaSequenceLib {
                         string label = "";
 
                         //Possible type.
-                        if (trueType == SequenceCommands.Call || trueType == SequenceCommands.Jump || trueType == SequenceCommands.OpenTrack) {
+                        if (trueType == SequenceCommands.Call || trueType == SequenceCommands.Jump || trueType == SequenceCommands.OpenTrack)
+                        {
 
                             //Get label.
                             uint offset = offsetMap.FirstOrDefault(x => x.Value == commandIndex).Key;
-                            if (Labels.ContainsValue(offset)) {
+                            if (Labels.ContainsValue(offset))
+                            {
                                 label = Labels.FirstOrDefault(x => x.Value == offset).Key;
-                            } else {
+                            }
+                            else
+                            {
                                 label = (globalMode ? "C" : "_c") + "ommand_" + commandIndex;
                                 OtherLabels.Add(commandIndex);
                             }
@@ -163,7 +178,8 @@ namespace GotaSequenceLib {
                         }
 
                         //Set label.
-                        switch (trueType) {
+                        switch (trueType)
+                        {
 
                             //Set the label.
                             case SequenceCommands.Call:
@@ -177,9 +193,11 @@ namespace GotaSequenceLib {
                     }
 
                     //Set reference commands.
-                    for (int i = 0; i < Commands.Count; i++) {
+                    for (int i = 0; i < Commands.Count; i++)
+                    {
                         SequenceCommands trueType = Playback.Player.GetTrueCommandType(Commands[i]);
-                        switch (trueType) {
+                        switch (trueType)
+                        {
                             case SequenceCommands.Call:
                             case SequenceCommands.Jump:
                             case SequenceCommands.OpenTrack:
@@ -200,11 +218,14 @@ namespace GotaSequenceLib {
         /// <summary>
         /// Write command data.
         /// </summary>
-        public void WriteCommandData() {
+        public void WriteCommandData()
+        {
 
             //Output stream.
-            using (MemoryStream o = new MemoryStream()) {
-                using (FileWriter w = new FileWriter(o)) {
+            using (MemoryStream o = new MemoryStream())
+            {
+                using (FileWriter w = new FileWriter(o))
+                {
 
                     //Platform.
                     var p = Platform();
@@ -212,9 +233,11 @@ namespace GotaSequenceLib {
                     //Convert indices to offsets.
                     Dictionary<int, uint> indexMap = new Dictionary<int, uint>();
                     int commandInd = 0;
-                    foreach (var c in Commands) {
+                    foreach (var c in Commands)
+                    {
                         indexMap.Add(commandInd, (uint)w.Position);
-                        if (c.CommandType == SequenceCommands.Note || p.CommandMap().ContainsKey(c.CommandType) || p.ExtendedCommands().ContainsKey(c.CommandType)) {
+                        if (c.CommandType == SequenceCommands.Note || p.CommandMap().ContainsKey(c.CommandType) || p.ExtendedCommands().ContainsKey(c.CommandType))
+                        {
                             c.Write(w, p);
                         }
                         commandInd++;
@@ -225,14 +248,17 @@ namespace GotaSequenceLib {
 
                     //Fix labels.
                     Labels = new Dictionary<string, uint>();
-                    for (int i = 0; i < PublicLabels.Count; i++) {
+                    for (int i = 0; i < PublicLabels.Count; i++)
+                    {
                         Labels.Add(PublicLabels.Keys.ElementAt(i), indexMap[PublicLabels.Values.ElementAt(i)]);
                     }
 
                     //Fix commands.
-                    for (int i = 0; i < Commands.Count; i++) {
+                    for (int i = 0; i < Commands.Count; i++)
+                    {
                         SequenceCommands trueCommandType = Playback.Player.GetTrueCommandType(Commands[i]);
-                        switch (trueCommandType) {
+                        switch (trueCommandType)
+                        {
                             case SequenceCommands.Call:
                             case SequenceCommands.Jump:
                             case SequenceCommands.OpenTrack:
@@ -242,10 +268,12 @@ namespace GotaSequenceLib {
                     }
 
                     //Write every command for real now.
-                    foreach (var c in Commands) {
+                    foreach (var c in Commands)
+                    {
 
                         //Only if supported command.
-                        if (c.CommandType == SequenceCommands.Note || p.CommandMap().ContainsKey(c.CommandType) || p.ExtendedCommands().ContainsKey(c.CommandType)) {
+                        if (c.CommandType == SequenceCommands.Note || p.CommandMap().ContainsKey(c.CommandType) || p.ExtendedCommands().ContainsKey(c.CommandType))
+                        {
                             c.Write(w, p);
                         }
 
@@ -268,8 +296,10 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="c">The command.</param>
         /// <param name="offsetMap">The offset map.</param>
-        public int SetOffsetIndex(SequenceCommand c, Dictionary<uint, int> offsetMap) {
-            switch (c.CommandType) {
+        public int SetOffsetIndex(SequenceCommand c, Dictionary<uint, int> offsetMap)
+        {
+            switch (c.CommandType)
+            {
                 case SequenceCommands.Random:
                 case SequenceCommands.TimeRandom:
                     return SetOffsetIndex((c.Parameter as RandomParameter).Command, offsetMap);
@@ -296,8 +326,10 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="c">The command.</param>
         /// <param name="label">The label.</param>
-        public int SetCommandLabel(SequenceCommand c, string label) {
-            switch (c.CommandType) {
+        public int SetCommandLabel(SequenceCommand c, string label)
+        {
+            switch (c.CommandType)
+            {
                 case SequenceCommands.Random:
                 case SequenceCommands.TimeRandom:
                     SetCommandLabel((c.Parameter as RandomParameter).Command, label);
@@ -328,8 +360,10 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="c">The command.</param>
         /// <param name="offsetMap">The offset map.</param>
-        public uint SetIndexOffset(SequenceCommand c, Dictionary<int, uint> offsetMap) {
-            switch (c.CommandType) {
+        public uint SetIndexOffset(SequenceCommand c, Dictionary<int, uint> offsetMap)
+        {
+            switch (c.CommandType)
+            {
                 case SequenceCommands.Random:
                 case SequenceCommands.TimeRandom:
                     return SetIndexOffset((c.Parameter as RandomParameter).Command, offsetMap);
@@ -355,8 +389,10 @@ namespace GotaSequenceLib {
         /// Set the reference command.
         /// </summary>
         /// <param name="c">The command to have its reference set.</param>
-        public void SetReferenceCommand(SequenceCommand c) {
-            switch (c.CommandType) {
+        public void SetReferenceCommand(SequenceCommand c)
+        {
+            switch (c.CommandType)
+            {
                 case SequenceCommands.Random:
                 case SequenceCommands.TimeRandom:
                     SetReferenceCommand((c.Parameter as RandomParameter).Command);
@@ -385,7 +421,8 @@ namespace GotaSequenceLib {
         /// Convert the file to text.
         /// </summary>
         /// <returns>The file as text.</returns>
-        public string[] ToText() {
+        public string[] ToText()
+        {
 
             //Command list.
             ReadCommandData();
@@ -401,20 +438,25 @@ namespace GotaSequenceLib {
             l.Add("");
 
             //For each command. Last one isn't counted.
-            for (int i = 0; i < Commands.Count; i++) {
+            for (int i = 0; i < Commands.Count; i++)
+            {
 
                 //Add labels.
                 bool labelAdded = false;
                 var labels = PublicLabels.Where(x => x.Value == i).Select(x => x.Key);
-                foreach (var label in labels) {
-                    if (i != 0 && !labelAdded && Commands[i - 1].CommandType == SequenceCommands.Fin) {
+                foreach (var label in labels)
+                {
+                    if (i != 0 && !labelAdded && Commands[i - 1].CommandType == SequenceCommands.Fin)
+                    {
                         l.Add(" ");
                     }
                     l.Add(label + ":");
                     labelAdded = true;
                 }
-                if (OtherLabels.Contains(i)) {
-                    if (i != 0 && !labelAdded && Commands[i - 1].CommandType == SequenceCommands.Fin) {
+                if (OtherLabels.Contains(i))
+                {
+                    if (i != 0 && !labelAdded && Commands[i - 1].CommandType == SequenceCommands.Fin)
+                    {
                         l.Add(" ");
                     }
                     l.Add("_command_" + i + ":");
@@ -422,7 +464,8 @@ namespace GotaSequenceLib {
                 }
 
                 //Add command.
-                if (i < Commands.Count - 1) {
+                if (i < Commands.Count - 1)
+                {
                     l.Add("\t" + Commands[i].ToString());
                 }
 
@@ -437,7 +480,8 @@ namespace GotaSequenceLib {
         /// Create a sequence from text.
         /// </summary>
         /// <param name="text">The text.</param>
-        public void FromText(List<string> text) {
+        public void FromText(List<string> text)
+        {
 
             //Success by default.
             WritingCommandSuccess = true;
@@ -451,33 +495,45 @@ namespace GotaSequenceLib {
             //Format text.
             List<string> t = text.ToList();
             int comNum = 0;
-            for (int i = t.Count - 1; i >= 0; i--) {
+            for (int i = t.Count - 1; i >= 0; i--)
+            {
                 t[i] = t[i].Replace("\t", " ").Replace("\r", "").Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Replace("  ", " ");
                 try { t[i] = t[i].Split(';')[0]; } catch { }
                 if (t[i].Replace(" ", "").Length == 0) { t.RemoveAt(i); continue; }
-                for (int j = 0; j < t[i].Length; j++) {
-                    if (t[i][j].Equals(' ')) {
+                for (int j = 0; j < t[i].Length; j++)
+                {
+                    if (t[i][j].Equals(' '))
+                    {
                         t[i] = t[i].Substring(j + 1);
                         j--;
-                    } else {
+                    }
+                    else
+                    {
                         break;
                     }
                 }
             }
 
             //Fetch labels.
-            for (int i = 0; i < t.Count; i++) {
+            for (int i = 0; i < t.Count; i++)
+            {
 
                 //If it's a label.
-                if (t[i].EndsWith(":")) {
+                if (t[i].EndsWith(":"))
+                {
                     labelLines.Add(i);
-                    if (t[i].StartsWith("_")) {
+                    if (t[i].StartsWith("_"))
+                    {
                         privateLabels.Add(t[i].Replace(":", ""), comNum);
                         OtherLabels.Add(comNum);
-                    } else {
+                    }
+                    else
+                    {
                         PublicLabels.Add(t[i].Replace(":", ""), comNum);
                     }
-                } else {
+                }
+                else
+                {
                     comNum++;
                 }
 
@@ -488,8 +544,10 @@ namespace GotaSequenceLib {
 
             //Get commands.
             Commands = new List<SequenceCommand>();
-            for (int i = 0; i < t.Count; i++) {
-                if (labelLines.Contains(i)) {
+            for (int i = 0; i < t.Count; i++)
+            {
+                if (labelLines.Contains(i))
+                {
                     continue;
                 }
                 SequenceCommand seq = new SequenceCommand();
@@ -498,9 +556,11 @@ namespace GotaSequenceLib {
             }
 
             //Set reference commands.
-            for (int i = 0; i < Commands.Count; i++) {
+            for (int i = 0; i < Commands.Count; i++)
+            {
                 SequenceCommands trueType = Playback.Player.GetTrueCommandType(Commands[i]);
-                switch (trueType) {
+                switch (trueType)
+                {
                     case SequenceCommands.Call:
                     case SequenceCommands.Jump:
                     case SequenceCommands.OpenTrack:
@@ -514,20 +574,23 @@ namespace GotaSequenceLib {
             WriteCommandData();
 
         }
-        
+
         /// <summary>
         /// Convert a data offset to an index.
         /// </summary>
         /// <param name="offset">Data offset.</param>
         /// <returns>Index.</returns>
-        public int ConvertOffset(uint offset) {
+        public int ConvertOffset(uint offset)
+        {
 
             //Get lowest distance.
             int lowest = -1;
             long minDist = long.MaxValue;
-            for (int i = 0; i < CommandIndices.Count; i++) {
+            for (int i = 0; i < CommandIndices.Count; i++)
+            {
                 long dist = Math.Abs(offset - CommandIndices.Keys.ElementAt(i));
-                if (dist < minDist) {
+                if (dist < minDist)
+                {
                     minDist = dist;
                     lowest = i;
                 }
@@ -541,7 +604,8 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="filePath">The MIDI path.</param>
         /// <param name="timeBase">Time base.</param>
-        public void FromMIDI(string filePath, int timeBase = 48, bool privateLabelsForCalls = false) {
+        public void FromMIDI(string filePath, int timeBase = 48, bool privateLabelsForCalls = false)
+        {
             Sanford.Multimedia.Midi.Sequence s = new Sanford.Multimedia.Midi.Sequence(filePath);
             Dictionary<string, int> pub;
             List<int> priv;
@@ -556,7 +620,8 @@ namespace GotaSequenceLib {
         /// </summary>
         /// <param name="filePath">Path to save the MIDI.</param>
         /// <param name="trackMask">Track mask.</param>
-        public void SaveMIDI(string filePath, ushort trackMask = 0xFFFF) {
+        public void SaveMIDI(string filePath, ushort trackMask = 0xFFFF)
+        {
             ReadCommandData();
             Sanford.Multimedia.Midi.Sequence s = SMF.FromSequenceCommands(Commands, 0, trackMask);
             s.Save(filePath);
@@ -566,7 +631,8 @@ namespace GotaSequenceLib {
         /// Copy from another sequence.
         /// </summary>
         /// <param name="other">Other sequence.</param>
-        public void CopyFromOther(SequenceFile other) {
+        public void CopyFromOther(SequenceFile other)
+        {
             other.ReadCommandData();
             Commands = other.Commands;
             PublicLabels = other.PublicLabels;
