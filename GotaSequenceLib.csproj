@@ -4,12 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="GotaSoundIO" Version="2.1.0" />
     <PackageReference Include="NAudio.Core" Version="2.1.0" />
-    <PackageReference Include="NAudio.Wasapi" Version="2.1.0" />
     <PackageReference Include="Sanford.Multimedia.Midi.Core" Version="7.0.0" />
   </ItemGroup>
 

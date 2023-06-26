@@ -45,7 +45,7 @@ namespace GotaSequenceLib.Playback
         /// <summary>
         /// Create a new mixer.
         /// </summary>
-        public Mixer()
+        public Mixer(IWavePlayer player)
         {
 
             // The sampling frequency of the mixer is 1.04876 MHz with an amplitude resolution of 24 bits, but the sampling frequency after mixing with PWM modulation is 32.768 kHz with an amplitude resolution of 10 bits.
@@ -66,7 +66,7 @@ namespace GotaSequenceLib.Playback
                 DiscardOnBufferOverflow = true,
                 BufferLength = _samplesPerBuffer * 64
             };
-            Init(_buffer);
+            Init(player, _buffer);
 
         }
 
@@ -74,16 +74,9 @@ namespace GotaSequenceLib.Playback
         /// Initialize the player.
         /// </summary>
         /// <param name="waveProvider"></param>
-        protected void Init(IWaveProvider waveProvider)
+        protected void Init(IWavePlayer player, IWaveProvider waveProvider)
         {
-            try
-            {
-                _out = new WasapiOut();
-            }
-            catch
-            {
-                _out = new NullWavePlayer();
-            }
+            _out = player;
             _out.Init(waveProvider);
             _out.Play();
         }
